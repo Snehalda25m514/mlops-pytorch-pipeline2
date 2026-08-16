@@ -1,0 +1,29 @@
+# Stage 1: Build dependency wheel paths
+FROM python:3.13-slim AS builder
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements/serve.txt .
+RUN pip install --no-cache-dir --user -r serve.txt
+
+# Stage 2: Final deployment server runner space
+FROM python:3.13-slim AS runner
+
+WORKDIR /app
+
+COPY --from=builder /root/.local /root/.local
+ENV PATH=/root/.local/bin:$PATH
+ENV PYTHONPATH=/app/src
+
+COPY src/ /app/src/
+COPY configs/ /app/configs/
+
+# Open port 8080 for FastAPI web traffic access
+EXPOSE 8080
+
+# Launch the Uvicorn ASGI server to bind the FastAPI app script online
+ENTRYPOINT ["uvicorn", "src.serve:app", "--host", "0.0.0.0", "--port", "8080"]
