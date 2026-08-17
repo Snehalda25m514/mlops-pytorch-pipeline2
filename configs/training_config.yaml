@@ -1,0 +1,14 @@
+data:
+  dataset_name: "CIFAR-10"
+  batch_size: 64
+  num_workers: 2
+
+model:
+  num_classes: 10
+
+training:
+  epochs: 20
+  learning_rate: 0.001
+  patience: 3
+  save_dir: "outputs"
+  checkpoint_name: "best_model.pt"

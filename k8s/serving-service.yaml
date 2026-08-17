@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fastapi-serving-service
+  namespace: mlops-pipeline
+spec:
+  # Creates a Service of type ClusterIP exposing port 80 targeting container port 8080
+  type: ClusterIP
+  selector:
+    app: serving-api
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080

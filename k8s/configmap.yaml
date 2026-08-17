@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pipeline-config
+  namespace: mlops-pipeline
+data:
+  TRAINING_EPOCHS: "20"
+  LEARNING_RATE: "0.001"
+  BATCH_SIZE: "64"
+  MODEL_DIR: "/app/outputs"

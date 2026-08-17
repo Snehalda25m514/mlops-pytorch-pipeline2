@@ -1,0 +1,58 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cnn-training-job
+  namespace: mlops-pipeline
+spec:
+  template:
+    spec:
+      # --- BONUS: Route container specifically onto cluster nodes containing physical GPUs ---
+      nodeSelector:
+        accelerator: nvidia-gpu
+
+      tolerations:
+      - key: "sku"
+        operator: "Equal"
+        value: "gpu"
+        effect: "NoSchedule"
+
+      containers:
+      - name: mlops-train
+        image: mlops-train:test # Uses your training Docker image
+        imagePullPolicy: IfNotPresent
+        
+        # --- Configure specific resource request allocations and structural limits ---
+        resources:
+          requests:
+            cpu: "2"
+            memory: "4Gi"
+          limits:
+            cpu: "2"
+            memory: "4Gi"
+            nvidia.com/gpu: "1" # --- BONUS: Request 1 dedicated NVIDIA GPU node element ---
+
+        volumeMounts:
+        # 1. Mounts the ConfigMap as a structural configuration volume at /app/configs
+        - name: config-volume
+          mountPath: /app/configs
+        
+        # 2. Mounts the PersistentVolumeClaim tracks for shared cluster training storage spaces
+        - name: storage-volume
+          mountPath: /app/data
+          subPath: data
+        - name: storage-volume
+          mountPath: /app/checkpoints
+          subPath: checkpoints
+
+      restartPolicy: OnFailure
+      
+      volumes:
+      # Maps the existing configmap keys directly into file systems
+      - name: config-volume
+        configMap:
+          name: pipeline-config
+
+      # References your persistent cloud storage claim structure
+      - name: storage-volume
+        persistentVolumeClaim:
+          claimName: mlops-pipeline-pvc

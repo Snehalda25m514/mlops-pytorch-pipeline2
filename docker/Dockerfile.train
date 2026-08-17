@@ -1,0 +1,34 @@
+# Stage 1: Build dependency wheel paths
+FROM python:3.13-slim AS builder
+
+WORKDIR /app
+
+# Install system utilities needed for potential runtime compilations
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements/train.txt .
+
+# Install dependencies securely under the local user space
+RUN pip install --no-cache-dir --user -r train.txt
+
+# Stage 2: Final lightweight execution runner space
+FROM python:3.13-slim AS runner
+
+WORKDIR /app
+
+# Pull down installed python binary wheels from the builder stage
+COPY --from=builder /root/.local /root/.local
+ENV PATH=/root/.local/bin:$PATH
+ENV PYTHONPATH=/app/src
+
+# Copy over training code matrices and parameter setups
+COPY src/ /app/src/
+COPY configs/ /app/configs/
+
+# Create a designated local space to store out the pt weight files
+RUN mkdir -p /app/outputs
+
+# Run the PyTorch configuration pipeline on container execution startup
+ENTRYPOINT ["python", "src/train.py"]
