@@ -1,0 +1,40 @@
+name: MLOps End-to-End Pipeline CI
+
+on:
+  push:
+    branches: [ develop, main ]
+  pull_request:
+    branches: [ develop, main ]
+
+jobs:
+  code-quality-and-validation:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code Repository
+      uses: actions/checkout@v4
+
+    # --- 1. PYTHON QUALITY TESTS ---
+    - name: Set up Python 3.13 Runtime
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+
+    - name: Install Testing Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install ruff pytest
+
+    - name: Run Code Linter (Syntax Verification)
+      run: |
+        # Verifies Python styling patterns across your src folder files
+        ruff check src/
+
+    # --- 2. KUBERNETES MANIFEST LINTING ---
+    - name: Validate Kubernetes Manifest Schema
+      uses: stefanprodan/kube-tools@v1
+      with:
+        kubectl: 1.30.0
+        command: |
+          # Dry-runs your manifests against an official API schema validation matrix
+          kubectl apply -f k8s/ --dry-run=client

@@ -1,6 +1,7 @@
 import torchvision
-import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
+from torchvision import transforms
+
 
 def get_dataloaders(batch_size: int = 64, num_workers: int = 2):
     # Normalized configuration setup for CIFAR-10 image inputs
