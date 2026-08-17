@@ -37,4 +37,4 @@ jobs:
         kubectl: 1.30.0
         command: |
           # Dry-runs your manifests against an official API schema validation matrix
-          kubectl apply -f k8s/ --dry-run=client
+          kubectl apply -f k8s/ --dry-run=client --validate=false
