@@ -36,5 +36,5 @@ jobs:
       with:
         kubectl: 1.30.0
         command: |
-          # Dry-runs your manifests against an official API schema validation matrix
-          kubectl apply -f k8s/ --dry-run=client --validate=false
+          # Recursively validate all YAMLs in your k8s/ folder completely offline
+          kubeconform -strict k8s/
