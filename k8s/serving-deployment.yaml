@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-serving-deployment
+  namespace: mlops-pipeline
+spec:
+  replicas: 2 # Runs 2 replicas of the serving container
+  
+  # Uses a rolling update strategy
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+      
+  selector:
+    matchLabels:
+      app: serving-api
+  template:
+    metadata:
+      labels:
+        app: serving-api
+    spec:
+      containers:
+      - name: mlops-serve
+        image: mlops-serve:test
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+        
+        # Sets resource requests and limits
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "1Gi"
+          limits:
+            cpu: "1"
+            memory: "2Gi"
+            
+        # Configures health check network probes
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          periodSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          periodSeconds: 5
+          initialDelaySeconds: 15
+
+        # Mounts the checkpoint PVC (read-only) at /app/checkpoints
+        volumeMounts:
+        - name: checkpoint-volume
+          mountPath: /app/checkpoints
+          readOnly: true
+          subPath: checkpoints
+
+      volumes:
+      - name: checkpoint-volume
+        persistentVolumeClaim:
+          claimName: mlops-pipeline-pvc
