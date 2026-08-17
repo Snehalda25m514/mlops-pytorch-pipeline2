@@ -1,17 +1,19 @@
 import io
 import os
-import yaml
+
 import torch
 import torch.nn.functional as F
-import torchvision.transforms as transforms
-from fastapi import FastAPI, UploadFile, File, HTTPException
+import yaml
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from PIL import Image
+from torchvision import transforms
+
 from model import ImageClassifierCNN
 
 app = FastAPI(title="MLOps PyTorch Inference Server")
 
 # Load global definitions
-config = yaml.safe_load(open("configs/training_config.yaml", "r"))
+config = yaml.safe_load(open("configs/training_config.yaml", "r"))    # noqa
 checkpoint_path = os.path.join(config['training']['save_dir'], config['training']['checkpoint_name'])
 
 # Instantiate and check global model state
@@ -40,7 +42,7 @@ def health_check():
     raise HTTPException(status_code=500, detail="Inference parameters unassigned.")
 
 @app.post("/predict")
-async def predict(file: UploadFile = File(...)):
+async def predict(file: UploadFile = File(...)):   # noqa
     if not model_loaded:
         raise HTTPException(status_code=503, detail="Model is down or uninitialized.")
     
@@ -54,5 +56,5 @@ async def predict(file: UploadFile = File(...)):
             probabilities = F.softmax(outputs, dim=1).squeeze().tolist()
             
         return {"probabilities": probabilities}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Invalid image format: {str(e)}")
+    except Exception as e:    # noqa
+        raise HTTPException(status_code=400, detail=f"Invalid image format: {e!s}")

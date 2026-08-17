@@ -1,5 +1,6 @@
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
+
 
 class ImageClassifierCNN(nn.Module):
     def __init__(self, num_classes: int = 10):

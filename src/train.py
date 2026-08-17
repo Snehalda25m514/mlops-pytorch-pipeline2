@@ -1,11 +1,14 @@
-import os
 import json
+import os
 import sys
-import yaml
+
 import torch
-import torch.nn as nn
+import yaml
+from torch import nn
+
 from dataset import get_dataloaders
 from model import ImageClassifierCNN
+
 
 def load_config(config_path="configs/training_config.yaml"):
     with open(config_path, "r") as f:
@@ -22,7 +25,7 @@ def train_pipeline():
     os.makedirs(config['training']['save_dir'], exist_ok=True)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    train_loader, test_loader = get_dataloaders(
+    train_loader, _test_loader = get_dataloaders(
         batch_size=config['data']['batch_size'],
         num_workers=config['data']['num_workers']
     )
